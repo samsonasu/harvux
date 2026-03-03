@@ -129,7 +129,30 @@ impl HarvuxTimerPage {
                     imp.task_assignments.replace(assignments);
 
                     if !names.is_empty() {
-                        imp.task_row.set_selected(0);
+                        // Check for pending task from entry selection
+                        if let Some(target_task_id) = imp.pending_task_id.take() {
+                            let task_idx = imp
+                                .task_assignments
+                                .borrow()
+                                .iter()
+                                .position(|a| a.task.id == target_task_id);
+                            imp.task_row.set_selected(task_idx.unwrap_or(0) as u32);
+
+                            // Set last_stopped AFTER task handler has cleared it
+                            if let Some(entry_id) = imp.pending_entry_id.take() {
+                                let projects = imp.projects.borrow();
+                                let pid = projects
+                                    .get(project_idx)
+                                    .map(|p| p.id);
+                                drop(projects);
+                                imp.last_stopped_entry_id.set(Some(entry_id));
+                                imp.last_stopped_project_id.set(pid);
+                                imp.last_stopped_task_id.set(Some(target_task_id));
+                            }
+                            imp.timer_button.set_sensitive(true);
+                        } else {
+                            imp.task_row.set_selected(0);
+                        }
                     }
                 }
                 Err(err) => {
@@ -138,6 +161,29 @@ impl HarvuxTimerPage {
                 }
             }
         });
+    }
+
+    pub(crate) fn on_entry_activated(&self, idx: usize) {
+        let imp = self.imp();
+        let entries = imp.time_entries.borrow();
+        let Some(entry) = entries.get(idx) else {
+            return;
+        };
+        if entry.is_running {
+            return;
+        }
+
+        let entry_id = entry.id;
+        let project_id = entry.project.as_ref().map(|p| p.id);
+        let task_id = entry.task.as_ref().map(|t| t.id);
+        let hours = entry.hours;
+        let notes = entry.notes.clone().unwrap_or_default();
+        drop(entries);
+
+        let Some(project_id) = project_id else { return };
+        let Some(task_id) = task_id else { return };
+
+        imp.select_entry_from_list(entry_id, project_id, task_id, hours, &notes);
     }
 
     pub fn refresh_entries(&self) {
@@ -214,6 +260,7 @@ impl HarvuxTimerPage {
             let row = adw::ActionRow::builder()
                 .title(&title)
                 .subtitle(&subtitle)
+                .activatable(!entry.is_running)
                 .build();
 
             if entry.is_running {

@@ -36,6 +36,8 @@ pub struct HarvuxTimerPage {
     pub last_stopped_entry_id: Cell<Option<i64>>,
     pub last_stopped_project_id: Cell<Option<i64>>,
     pub last_stopped_task_id: Cell<Option<i64>>,
+    pub pending_task_id: Cell<Option<i64>>,
+    pub pending_entry_id: Cell<Option<i64>>,
     pub timer_source_id: RefCell<Option<glib::SourceId>>,
     pub timer_started_at: RefCell<Option<chrono::DateTime<chrono::Utc>>>,
     pub running_hours: Cell<f64>,
@@ -325,6 +327,139 @@ impl HarvuxTimerPage {
             }
         });
     }
+
+    pub(super) fn select_entry_from_list(
+        &self,
+        entry_id: i64,
+        project_id: i64,
+        task_id: i64,
+        hours: f64,
+        notes: &str,
+    ) {
+        let running_entry_id = self.running_entry_id.get();
+
+        if running_entry_id.is_some() {
+            // A timer is running — stop it via API first, then sync UI
+            let client = self.client.borrow().as_ref().cloned();
+            let Some(client) = client else { return };
+            let rt = self.tokio_rt.borrow().as_ref().cloned();
+            let Some(rt) = rt else { return };
+
+            let timer_button = self.timer_button.clone();
+            let obj = self.obj().clone();
+            let running_id = running_entry_id.unwrap();
+            let current_notes = self.notes_row.text().to_string();
+            let notes_for_new = notes.to_string();
+
+            timer_button.set_sensitive(false);
+
+            glib::spawn_future_local(async move {
+                // Save notes and stop the running timer
+                let update = api::UpdateTimeEntry {
+                    project_id: None,
+                    task_id: None,
+                    spent_date: None,
+                    hours: None,
+                    notes: Some(if current_notes.is_empty() {
+                        String::new()
+                    } else {
+                        current_notes
+                    }),
+                };
+                let c = client.clone();
+                let r = rt.clone();
+                let _ = r
+                    .spawn(async move { c.update_time_entry(running_id, &update).await })
+                    .await;
+
+                let c = client.clone();
+                let _ = rt
+                    .spawn(async move { c.stop_time_entry(running_id).await })
+                    .await;
+
+                let imp = obj.imp();
+                imp.running_entry_id.set(None);
+
+                // Stop tick timer
+                if let Some(source_id) = imp.timer_source_id.take() {
+                    source_id.remove();
+                }
+
+                // Now sync UI to the clicked entry
+                imp.apply_entry_selection(
+                    entry_id, project_id, task_id, hours, &notes_for_new, &timer_button,
+                );
+                obj.refresh_entries();
+            });
+        } else {
+            // No timer running — just sync UI immediately
+            let timer_button = self.timer_button.clone();
+            self.apply_entry_selection(
+                entry_id, project_id, task_id, hours, notes, &timer_button,
+            );
+            self.obj().refresh_entries();
+        }
+    }
+
+    fn apply_entry_selection(
+        &self,
+        entry_id: i64,
+        project_id: i64,
+        task_id: i64,
+        hours: f64,
+        notes: &str,
+        timer_button: &gtk::Button,
+    ) {
+        // Update timer display to show entry's accumulated time
+        self.running_hours.set(hours);
+        self.timer_started_at.replace(None);
+        let total_secs = (hours * 3600.0) as i64;
+        let h = total_secs / 3600;
+        let m = (total_secs % 3600) / 60;
+        let s = total_secs % 60;
+        self.timer_label
+            .set_label(&format!("{h:02}:{m:02}:{s:02}"));
+
+        // Update notes
+        self.notes_row.set_text(notes);
+
+        // Set button to "Start Timer"
+        timer_button.set_label("Start Timer");
+        timer_button.remove_css_class("destructive-action");
+        timer_button.add_css_class("suggested-action");
+
+        // Sync project/task dropdowns, then set last_stopped afterward
+        // (dropdown change handlers clear last_stopped, so we must set it after)
+        let projects = self.projects.borrow();
+        let project_idx = projects.iter().position(|p| p.id == project_id);
+        drop(projects);
+
+        if let Some(idx) = project_idx {
+            if self.project_row.selected() == idx as u32 {
+                // Same project — directly select the task
+                let assignments = self.task_assignments.borrow();
+                let task_idx = assignments.iter().position(|a| a.task.id == task_id);
+                drop(assignments);
+                if let Some(tidx) = task_idx {
+                    self.task_row.set_selected(tidx as u32);
+                }
+                // Set last_stopped AFTER handler has fired and cleared it
+                self.last_stopped_entry_id.set(Some(entry_id));
+                self.last_stopped_project_id.set(Some(project_id));
+                self.last_stopped_task_id.set(Some(task_id));
+                timer_button.set_sensitive(true);
+            } else {
+                // Different project — store pending info, then switch project
+                // load_tasks_for_project will consume these and set last_stopped
+                self.pending_task_id.set(Some(task_id));
+                self.pending_entry_id.set(Some(entry_id));
+                self.project_row.set_selected(idx as u32);
+                timer_button.set_sensitive(false);
+            }
+        } else {
+            timer_button.set_sensitive(true);
+        }
+    }
 }
 
 impl ObjectImpl for HarvuxTimerPage {
@@ -358,6 +493,15 @@ impl ObjectImpl for HarvuxTimerPage {
             imp.last_stopped_entry_id.set(None);
             imp.last_stopped_project_id.set(None);
             imp.last_stopped_task_id.set(None);
+        });
+
+        // Handle clicks on time entries to resume them
+        let obj3 = self.obj().clone();
+        self.entries_list.connect_row_activated(move |_, row| {
+            let idx = row.index();
+            if idx >= 0 {
+                obj3.on_entry_activated(idx as usize);
+            }
         });
     }
 }
