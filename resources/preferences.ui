@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="HarvuxPreferences" parent="AdwPreferencesDialog">
+    <child>
+      <object class="AdwPreferencesPage">
+        <property name="title" translatable="yes">Account</property>
+        <property name="icon-name">user-info-symbolic</property>
+        <child>
+          <object class="AdwPreferencesGroup">
+            <property name="title" translatable="yes">Harvest API</property>
+            <property name="description" translatable="yes">Get your personal access token from id.getharvest.com/developers</property>
+            <child>
+              <object class="AdwPasswordEntryRow" id="token_row">
+                <property name="title" translatable="yes">Access Token</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwEntryRow" id="account_id_row">
+                <property name="title" translatable="yes">Account ID</property>
+                <property name="input-purpose">digits</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup" id="actions_group">
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">horizontal</property>
+                <property name="halign">center</property>
+                <property name="spacing">12</property>
+                <property name="margin-top">12</property>
+                <child>
+                  <object class="GtkButton" id="test_button">
+                    <property name="label" translatable="yes">Test Connection</property>
+                    <property name="css-classes">suggested-action</property>
+                    <signal name="clicked" handler="on_test_clicked" swapped="true"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="save_button">
+                    <property name="label" translatable="yes">Save</property>
+                    <signal name="clicked" handler="on_save_clicked" swapped="true"/>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup" id="status_group">
+            <child>
+              <object class="GtkLabel" id="status_label">
+                <property name="label"></property>
+                <property name="wrap">true</property>
+                <property name="css-classes">dim-label</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

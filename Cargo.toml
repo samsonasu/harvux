@@ -1,0 +1,20 @@
+[package]
+name = "harvux"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+gtk = { version = "0.11", package = "gtk4", features = ["v4_16"] }
+adw = { version = "0.9", package = "libadwaita", features = ["v1_6"] }
+glib = "0.22"
+gio = "0.22"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread"] }
+chrono = { version = "0.4", features = ["serde"] }
+oo7 = "0.4"
+anyhow = "1"
+
+[build-dependencies]
+glib-build-tools = "0.22"

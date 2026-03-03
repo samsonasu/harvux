@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/com/github/bsamson/Harvux/">
+    <file compressed="true" preprocess="xml-stripblanks">window.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">preferences.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">timer_page.ui</file>
+  </gresource>
+</gresources>
