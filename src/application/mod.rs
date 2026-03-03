@@ -58,7 +58,7 @@ impl HarvuxApplication {
 
         let about = adw::AboutDialog::builder()
             .application_name("Harvux")
-            .application_icon("com.github.bsamson.Harvux")
+            .application_icon("com.github.samsonasu.Harvux")
             .developer_name("bsamson")
             .version("0.1.0")
             .developers(vec!["bsamson"])

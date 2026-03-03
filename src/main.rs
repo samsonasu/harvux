@@ -11,7 +11,7 @@ use gtk::{gio, glib, prelude::*};
 
 use application::HarvuxApplication;
 
-const APP_ID: &str = "com.github.bsamson.Harvux";
+const APP_ID: &str = "com.github.samsonasu.Harvux";
 
 fn main() -> glib::ExitCode {
     gio::resources_register_include!("harvux.gresource")

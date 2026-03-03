@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.github.samsonasu.Harvux</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Harvux</name>
+  <summary>Track time to Harvest</summary>
+  <description>
+    <p>
+      Harvux is a native Linux desktop client for the Harvest time tracking
+      service. Built with GTK4 and libadwaita, it integrates with the GNOME
+      desktop to let you start, stop, and manage timers without leaving your
+      workflow.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.github.samsonasu.Harvux.desktop</launchable>
+  <url type="homepage">https://github.com/samsonasu/harvux</url>
+  <url type="bugtracker">https://github.com/samsonasu/harvux/issues</url>
+  <developer id="com.github.samsonasu">
+    <name>bsamson</name>
+  </developer>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="0.1.0" date="2026-03-03">
+      <description>
+        <p>Initial release.</p>
+      </description>
+    </release>
+  </releases>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+</component>

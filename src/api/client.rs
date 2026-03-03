@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, USER_AGENT};
 
 const BASE_URL: &str = "https://api.harvestapp.com/v2";
-const APP_USER_AGENT: &str = "Harvux (https://github.com/bsamson/harvux)";
+const APP_USER_AGENT: &str = "Harvux (https://github.com/samsonasu/harvux)";
 
 #[derive(Clone)]
 pub struct HarvestClient {
