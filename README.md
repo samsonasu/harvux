@@ -4,6 +4,9 @@ A native Linux desktop client for [Harvest](https://www.getharvest.com/) time tr
 
 ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)
 
+<img width="530" height="770" alt="image" src="https://github.com/user-attachments/assets/cb57bfd5-a501-4308-b0d9-8862c2415372" />
+
+
 ## Features
 
 - **One-click timers** — start, stop, and restart time entries from your desktop
