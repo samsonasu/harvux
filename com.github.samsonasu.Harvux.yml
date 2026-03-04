@@ -12,6 +12,7 @@ finish-args:
   - --device=dri
   - --share=network
   - --talk-name=org.freedesktop.secrets
+  - --talk-name=org.kde.StatusNotifierWatcher
 build-options:
   append-path: /usr/lib/sdk/rust-stable/bin
   env:

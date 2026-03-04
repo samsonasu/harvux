@@ -2,6 +2,7 @@ mod api;
 mod application;
 mod credentials;
 mod preferences;
+mod tray;
 mod widgets;
 mod window;
 

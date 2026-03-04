@@ -50,7 +50,30 @@ impl HarvuxApplication {
             })
             .build();
 
-        self.add_action_entries([about_action, preferences_action]);
+        let quit_action = gio::ActionEntry::builder("quit")
+            .activate(move |app: &Self, _, _| {
+                app.quit();
+            })
+            .build();
+
+        self.add_action_entries([about_action, preferences_action, quit_action]);
+        self.set_accels_for_action("app.quit", &["<Control>q"]);
+    }
+
+    pub fn toggle_window_visibility(&self) {
+        if let Some(window) = self.active_window() {
+            if window.is_visible() {
+                window.set_visible(false);
+            } else {
+                window.present();
+            }
+        } else {
+            // No active window — check all windows
+            let windows = self.windows();
+            if let Some(window) = windows.first() {
+                window.present();
+            }
+        }
     }
 
     fn show_about(&self) {

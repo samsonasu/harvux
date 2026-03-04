@@ -42,6 +42,14 @@ impl ObjectImpl for HarvuxWindow {
 }
 
 impl WidgetImpl for HarvuxWindow {}
-impl WindowImpl for HarvuxWindow {}
+
+impl WindowImpl for HarvuxWindow {
+    fn close_request(&self) -> glib::Propagation {
+        // Hide the window instead of destroying it so the app stays in the tray
+        self.obj().set_visible(false);
+        glib::Propagation::Stop
+    }
+}
+
 impl ApplicationWindowImpl for HarvuxWindow {}
 impl AdwApplicationWindowImpl for HarvuxWindow {}
